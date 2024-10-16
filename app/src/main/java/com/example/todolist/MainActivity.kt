@@ -6,14 +6,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -28,10 +32,7 @@ import com.example.todolist.models.ToDoTask
 import com.example.todolist.screens.AddTaskScreen
 import com.example.todolist.screens.TaskDetailScreen
 import com.example.todolist.screens.TaskListScreen
-import com.example.todolist.ui.theme.Purple40
-import com.example.todolist.ui.theme.Purple80
-import com.example.todolist.ui.theme.TodoListTheme
-import java.util.UUID
+import com.example.todolist.ui.theme.BluePrimary
 
     class MainActivity : ComponentActivity() {
         @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -53,23 +54,30 @@ import java.util.UUID
         val myTasks = remember { mutableStateListOf<ToDoTask>() }
         val screenNumber = remember { mutableStateOf(1) }
         val selectedTask = remember { mutableStateOf<ToDoTask?>(null)}
+        var showFab = remember { mutableStateOf(true)
+        }
+
         Scaffold(
             topBar = {
 
                 TopAppBar(title = { Text(text = "Todo List")},
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Purple80,
-                        titleContentColor = Color.White,
+                        containerColor = BluePrimary,
+                        titleContentColor = Color.White
                     )
                     )
             },
 
             floatingActionButton = {
+
+                if(showFab.value){
+
                 FloatingActionButton(onClick = {
-                    val randomUUID = UUID.randomUUID().toString()
-                    myTasks.add( ToDoTask(randomUUID,"Apprendre JetPack Compose"))
+                    screenNumber.value = 3
+                    showFab.value = false
+
                 },
-                    containerColor = Purple40,
+                    containerColor = MaterialTheme.colorScheme.tertiary,
                     contentColor = Color.White
 
                 ){
@@ -77,21 +85,40 @@ import java.util.UUID
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add" )
 
                 }
+                }
+
+
 
             }
 
         ) {
            Box(modifier = Modifier.padding(it)) {
 
-               AnimatedVisibility(visible = screenNumber.value == 1) {
-                   TaskListScreen(screenNumber, myTasks, selectedTask)
+               AnimatedVisibility(visible = screenNumber.value == 1,
+
+                   enter = fadeIn() + slideInVertically() ,
+                   exit = fadeOut() + slideOutVertically()
+               ) {
+                   TaskListScreen(screenNumber, myTasks, selectedTask,showFab)
 
                }
 
-               AnimatedVisibility(visible = screenNumber.value == 2) {
+               AnimatedVisibility(visible = screenNumber.value == 2,
+                   enter = fadeIn() + slideInVertically() ,
+                   exit = fadeOut() + slideOutVertically()
+               ) {
                    if(selectedTask.value != null) {
-                       TaskDetailScreen(screenNumber,selectedTask.value!!)
+                       TaskDetailScreen(screenNumber,selectedTask.value!!,showFab)
                    }
+
+               }
+
+               AnimatedVisibility(visible = screenNumber.value == 3,
+                   enter = fadeIn() + slideInVertically() ,
+                   exit = fadeOut() + slideOutVertically()
+               ) {
+                   AddTaskScreen(screen = screenNumber, tasks = myTasks, fab = showFab)
+
 
                }
 
